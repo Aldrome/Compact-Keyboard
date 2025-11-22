@@ -10,3 +10,8 @@ Teensyduino
 ```
 ILI9341_t3n
 ```
+
+## USB Type
+```
+Serial + MIDI + Audio
+```

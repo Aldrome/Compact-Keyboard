@@ -1,5 +1,8 @@
 # Compact Piano Keyboard with DSP and MIDI functions
 
+Schematic link
+https://drive.google.com/drive/folders/1MW6RK4cLdNylEYujYAkNW5wjjUnl7ojT?usp=drive_link
+
 Most piano keyboards that musicians use are full scale, which causes problems for composing or playing
 in places that lack the space or accessibility, since it is made for performance. This keyboard project has the
 focus of minimizing size to something you can fit on a desk and be able to move more freely with it. It will be

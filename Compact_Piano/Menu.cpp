@@ -18,7 +18,6 @@ const char* const Menu::musicPlayerMenuLabels[] = {
      "Prev Song", 
      "Next Song", 
      "", 
-     "<< Back"
 };
 const int Menu::musicPlayerMenuCount = ARRAY_SIZE(musicPlayerMenuLabels);
 
@@ -26,14 +25,12 @@ const int Menu::musicPlayerMenuCount = ARRAY_SIZE(musicPlayerMenuLabels);
 const char* const Menu::metronomeMenuLabels[] = {
      "BPM:", 
      "",
-     "<< Back"
 };
 const int Menu::metronomeMenuCount = ARRAY_SIZE(metronomeMenuLabels);
 
 // Settings Submenu
 const char* const Menu::settingsMenuLabels[] = {
      "Settings (Empty)", 
-     "<< Back"
 };
 const int Menu::settingsMenuCount = ARRAY_SIZE(settingsMenuLabels);
 
@@ -224,7 +221,6 @@ MenuAction Menu::pressButton() {
                case 0: action = MENU_ACTION_PREV_SONG; break;
                case 1: action = MENU_ACTION_NEXT_SONG; break;
                case 2: action = MENU_ACTION_PLAY_PAUSE; break;
-               case 3: action = MENU_ACTION_GO_BACK; goBack(); break; // Back option
           }
      } else if (currentScreen == SCREEN_METRONOME) { // <-- NEW
           switch (menuIndex) {
@@ -235,17 +231,12 @@ MenuAction Menu::pressButton() {
                case 1: // Start/Stop
                     action = MENU_ACTION_TOGGLE_METRONOME;
                     break;
-               case 2: // << Back
-                    action = MENU_ACTION_GO_BACK; 
-                    goBack(); 
-                    break;
           }
      } else if (currentScreen == SCREEN_SETTINGS) {
           switch (menuIndex) {
                case 0: // Settings (empty) - future functionality
                     // action = MENU_ACTION_SETTINGS_OPTION_1;
                     break; 
-               case 1: action = MENU_ACTION_GO_BACK; goBack(); break; // Back option
           }
      }
 

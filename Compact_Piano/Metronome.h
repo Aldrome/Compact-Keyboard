@@ -2,6 +2,7 @@
 #define METRONOME_H
 
 #include <IntervalTimer.h>
+#include <Arduino.h>
 
 enum MetronomeState { METRONOME_RUNNING, METRONOME_STOPPED };
 
@@ -27,6 +28,9 @@ public:
 
      void start();
      void stop();
+
+     void syncStart();
+     void syncStop();
      
      MetronomeState getState() const { return state; }
 
@@ -47,6 +51,12 @@ private:
      void tick();
 
      static Metronome* instance;
+
+     bool engineRunning = false;
+     bool musicEngineRunning = false;
+     bool isFirstBeat = true;
+     elapsedMillis tickTimer;
+     unsigned long usInterval = 0;
 };
 
 #endif

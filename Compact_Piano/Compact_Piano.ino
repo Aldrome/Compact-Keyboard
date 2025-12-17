@@ -5,6 +5,7 @@
 
 #include "Menu.h"
 #include "Metronome.h"
+//#include "Synth.h"
 
 #include <Audio.h>
 #include <Wire.h>
@@ -14,8 +15,8 @@
 
 // GUItool: begin automatically generated code
 AudioInputUSB            usbIn;           //xy=55,182.33334732055664
-AudioSynthSimpleDrum     drum1;          //xy=56.33332824707031,300.33330726623535
 AudioPlaySdWav           playWav;        //xy=57.33332824707031,61.5
+AudioSynthSimpleDrum     drum1;          //xy=75.33332824707031,301.3333282470703
 AudioAmplifier           ampL1;          //xy=229.3333282470703,36.5
 AudioAmplifier           ampR1;          //xy=229.3333282470703,66.5
 AudioFilterStateVariable filterL1;       //xy=387.3333282470703,27.5
@@ -31,12 +32,11 @@ AudioAnalyzePeak         peakL;          //xy=910.9999847412109,228.333328247070
 AudioAnalyzePeak         peakR;          //xy=911.0000305175781,258.3333511352539
 AudioOutputUSB           usbOut;         //xy=916.3333282470703,31.5
 AudioOutputI2S           audioOutput;    //xy=927.3333282470703,178.5
-
 AudioConnection          patchCord1(usbIn, 0, filterL2, 0);
 AudioConnection          patchCord2(usbIn, 1, filterR2, 0);
-AudioConnection          patchCord3(drum1, amp3);
-AudioConnection          patchCord4(playWav, 0, ampL1, 0);
-AudioConnection          patchCord5(playWav, 1, ampR1, 0);
+AudioConnection          patchCord3(playWav, 0, ampL1, 0);
+AudioConnection          patchCord4(playWav, 1, ampR1, 0);
+AudioConnection          patchCord5(drum1, amp3);
 AudioConnection          patchCord6(ampL1, 0, filterL1, 0);
 AudioConnection          patchCord7(ampR1, 0, filterR1, 0);
 AudioConnection          patchCord8(filterL1, 0, ampL2, 0);
@@ -53,8 +53,7 @@ AudioConnection          patchCord18(mixerL, 0, audioOutput, 0);
 AudioConnection          patchCord19(mixerL, peakL);
 AudioConnection          patchCord20(mixerR, 0, audioOutput, 1);
 AudioConnection          patchCord21(mixerR, peakR);
-
-AudioControlSGTL5000     sgtl5000;       //xy=56.5,402.4999933242798
+AudioControlSGTL5000     sgtl5000;       //xy=56.5,439.49999618530273
 // GUItool: end automatically generated code
 
 
@@ -75,9 +74,18 @@ AudioControlSGTL5000     sgtl5000;       //xy=56.5,402.4999933242798
 #define ENC_CLK       29
 #define ENC_DT        30
 #define ENC_SW        31
-#define VOLUME_PIN    14
-#define FILTER_PIN    15
-#define HOME_BUTTON_PIN 16 // NEW: Assuming a dedicated digital pin for Home button
+
+#define MUX_SIG_PIN    41
+#define MUX_S2_PIN     40
+#define MUX_S1_PIN     39
+#define MUX_S0_PIN     38
+
+#define BACK_BUTTON_PIN 0
+#define HOME_BUTTON_PIN 2
+
+// --- MUX Definition ---
+#define VOLUME_MUX_CHANNEL     0
+#define FILTER_MUX_CHANNEL     1
 
 // --- TFT ---
 ILI9341_t3n tft = ILI9341_t3n(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCK, TFT_MISO);
@@ -95,9 +103,9 @@ struct SongEntry {
 
 const SongEntry playlist[] = {
      {"MYSTIC.WAV",   160,  0},
-     {"BITEME.WAV",   174,  10}, 
-     {"GLITCH.WAV",   150,  -5},
-     {"BAMBOO.WAV",   154,   0}
+     {"BITEME.WAV",   174,  184}, 
+     {"GLITCH.WAV",   150,  30},
+     {"BAMBOO.WAV",   154,   194}
 };
 
 const int totalSongs = sizeof(playlist) / sizeof(playlist[0]);
@@ -108,9 +116,12 @@ PlayerState state = PAUSED;
 Encoder knob(ENC_DT, ENC_CLK);
 long lastPosition = 0;
 bool lastEncoderButtonState = HIGH;
-bool lastHomeButtonState = HIGH; // New state for Home button
+bool lastBackButtonState = HIGH;
+bool lastHomeButtonState = HIGH;
 unsigned long lastButtonPress = 0;
 const unsigned long debounceTime = 200;
+
+elapsedMillis serialTimer;
 
 // --- Menu System ---
 Menu menu(tft);
@@ -131,6 +142,7 @@ void playCurrentSong() {
      metaData.bpm = activeSong.bpm;
      metaData.offsetMillis = activeSong.offset;
      metronome.loadSongInfo(metaData);
+     metronome.syncStart();
      menu.setMetronomeInfo(metronome.getState(), metronome.getBPM());
 
      state = PLAYING;
@@ -140,16 +152,35 @@ void playCurrentSong() {
 
 void stopPlayback() {
      playWav.stop();
+     metronome.syncStop();
      state = PAUSED;
      menu.setPlayerState(state);
 }
 
 void nextSong() {
      playWav.stop();
+     metronome.syncStop();
+
      currentSong++;
      if (currentSong >= totalSongs) currentSong = 0;
      Serial.println(playlist[currentSong].filename);
      playCurrentSong();
+}
+
+int readMuxChannel(int channel) {
+    // Set S0, S1, S2 pins based on the channel number
+    // S0 is the LSB (bit 0), S2 is the MSB (bit 2)
+    digitalWrite(MUX_S0_PIN, (channel & 0b001) ? HIGH : LOW);
+    digitalWrite(MUX_S1_PIN, (channel & 0b010) ? HIGH : LOW);
+    digitalWrite(MUX_S2_PIN, (channel & 0b100) ? HIGH : LOW);
+
+    delayMicroseconds(5); 
+
+    analogRead(MUX_SIG_PIN); 
+
+    delayMicroseconds(5);
+
+    return analogRead(MUX_SIG_PIN);
 }
 
 void handlePotentiometers() {
@@ -158,7 +189,7 @@ void handlePotentiometers() {
 
      const float disableThreshold = 0.95f;
 
-     int volumePotValue = analogRead(VOLUME_PIN);
+     int volumePotValue = readMuxChannel(VOLUME_MUX_CHANNEL);
      float volume = (volumePotValue / 1023.0) * MAX_VOLUME;
 
      if (volume < 0.01) {
@@ -171,27 +202,54 @@ void handlePotentiometers() {
      ampL2.gain(volume);
      ampR2.gain(volume);
 
-     int filterPotValue = analogRead(FILTER_PIN);
+     int filterPotValue = readMuxChannel(FILTER_MUX_CHANNEL);
      float norm = filterPotValue / 1023.0f;
 
+     const float Q_RAMP_START = 0.85f;
+     const float MAX_RESONANCE = 5.0f;
+     const float MIN_RESONANCE = 1.0f;
+     
+     float currentResonance = MAX_RESONANCE;
+     
      if (norm >= disableThreshold) {
-          filterL1.frequency(20000.0f); filterR1.frequency(20000.0f);
-          filterL2.frequency(20000.0f); filterR2.frequency(20000.0f);
-          filterL1.resonance(1.0f); filterR1.resonance(1.0f);
-          filterL2.resonance(1.0f); filterR2.resonance(1.0f);
-          return;
+         filterL1.frequency(20000.0f); filterR1.frequency(20000.0f);
+         filterL2.frequency(20000.0f); filterR2.frequency(20000.0f);
+         filterL1.resonance(MIN_RESONANCE); filterR1.resonance(MIN_RESONANCE);
+         filterL2.resonance(MIN_RESONANCE); filterR2.resonance(MIN_RESONANCE);
+         return;
      }
+
+     if (norm >= Q_RAMP_START) {
+         float rampRange = disableThreshold - Q_RAMP_START;
+         float rampPos = norm - Q_RAMP_START;
+
+         float inverseRampFactor = 1.0f - (rampPos / rampRange); 
+
+         currentResonance = MIN_RESONANCE + (MAX_RESONANCE - MIN_RESONANCE) * inverseRampFactor;
+         currentResonance = constrain(currentResonance, MIN_RESONANCE, MAX_RESONANCE);
+     }
+
      float cutoff = MIN_CUTOFF + (MAX_CUTOFF - MIN_CUTOFF) * norm / disableThreshold;
 
      filterL1.frequency(cutoff); filterR1.frequency(cutoff);
      filterL2.frequency(cutoff); filterR2.frequency(cutoff);
-     filterL1.resonance(0.7); filterR1.resonance(0.7);
-     filterL2.resonance(0.7); filterR2.resonance(0.7);
+     
+     filterL1.resonance(currentResonance); filterR1.resonance(currentResonance);
+     filterL2.resonance(currentResonance); filterR2.resonance(currentResonance);
+
+     if (serialTimer >= 200) { // Print every 200 milliseconds
+          serialTimer = 0;
+          Serial.print("Vol(0): Raw=");
+          Serial.print(volumePotValue);
+          Serial.print(" | Filter(1): Raw=");
+          Serial.println(filterPotValue);
+     }
 }
 
 void executeMenuAction(MenuAction action) {
      switch (action) {
           case MENU_ACTION_PREV_SONG:
+               metronome.syncStop();
                if (currentSong == 0) {
                     currentSong = totalSongs - 1;
                } else {
@@ -301,6 +359,15 @@ void handleMenuInput() {
           lastButtonPress = now;
      }
      lastHomeButtonState = homeButtonState;
+
+     bool backButtonState = digitalRead(BACK_BUTTON_PIN);
+
+     if (backButtonState == LOW && lastBackButtonState == HIGH && (now - lastButtonPress > debounceTime)) {
+          menu.goBack();
+          executeMenuAction(MENU_ACTION_GO_BACK); 
+          lastButtonPress = now;
+     }
+     lastBackButtonState = backButtonState;
 }
 
 // --- Setup ---
@@ -337,12 +404,17 @@ void setup() {
      mixerL.gain(2, 1.0f); 
      mixerR.gain(2, 1.0f);
      
-     amp3.gain(1.2f); 
+     amp3.gain(1.5f); 
 
      metronome.begin();
 
      pinMode(ENC_SW, INPUT_PULLUP);
-     pinMode(HOME_BUTTON_PIN, INPUT_PULLUP); 
+     pinMode(BACK_BUTTON_PIN, INPUT_PULLUP); 
+     pinMode(HOME_BUTTON_PIN, INPUT_PULLUP);
+
+     pinMode(MUX_S0_PIN, OUTPUT);
+     pinMode(MUX_S1_PIN, OUTPUT);
+     pinMode(MUX_S2_PIN, OUTPUT);
 
      pinMode(TFT_CS, OUTPUT); digitalWrite(TFT_CS, HIGH);
      pinMode(AUDIO_SD_CS, OUTPUT); digitalWrite(AUDIO_SD_CS, HIGH);

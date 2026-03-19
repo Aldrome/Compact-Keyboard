@@ -744,12 +744,6 @@
 		(uuid "b524258d-5b43-4902-a4de-97d7cec0dcdb")
 	)
 	(junction
-		(at 135.89 142.24)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "b610a8a1-0428-4592-a644-b09262279123")
-	)
-	(junction
 		(at 167.64 88.9)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -817,16 +811,6 @@
 	)
 	(wire
 		(pts
-			(xy 135.89 142.24) (xy 137.16 142.24)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "37010b24-3e40-49c9-a17b-fca6722f8fa6")
-	)
-	(wire
-		(pts
 			(xy 167.64 124.46) (xy 167.64 133.35)
 		)
 		(stroke
@@ -874,16 +858,6 @@
 			(type default)
 		)
 		(uuid "518a9560-8dd8-4ae8-bf77-4b9083bf3b1f")
-	)
-	(wire
-		(pts
-			(xy 111.76 142.24) (xy 135.89 142.24)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "52b89165-3c80-42ad-ac3f-b6d916dbb24d")
 	)
 	(wire
 		(pts
@@ -944,6 +918,16 @@
 			(type default)
 		)
 		(uuid "7ceaac36-18a7-4551-aec2-dd43819a7271")
+	)
+	(wire
+		(pts
+			(xy 111.76 142.24) (xy 135.89 142.24)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "88350d78-b152-4c28-944d-8729c4a17c54")
 	)
 	(wire
 		(pts
@@ -1196,7 +1180,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 			(at 139.7 126.238 90)
 			(effects
 				(font
@@ -1264,7 +1248,7 @@
 				)
 			)
 		)
-		(property "Footprint" "LED_SMD:LED_0402_1005Metric_Pad0.77x0.64mm_HandSolder"
+		(property "Footprint" "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder"
 			(at 154.94 106.68 0)
 			(effects
 				(font
@@ -1342,7 +1326,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 			(at 139.7 144.018 90)
 			(effects
 				(font
@@ -1411,7 +1395,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 			(at 139.7 90.678 90)
 			(effects
 				(font
@@ -1548,7 +1532,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 			(at 139.7 108.458 90)
 			(effects
 				(font
@@ -1683,7 +1667,7 @@
 				)
 			)
 		)
-		(property "Footprint" "LED_SMD:LED_0402_1005Metric_Pad0.77x0.64mm_HandSolder"
+		(property "Footprint" "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder"
 			(at 154.94 88.9 0)
 			(effects
 				(font
@@ -1828,7 +1812,7 @@
 				)
 			)
 		)
-		(property "Footprint" "LED_SMD:LED_0402_1005Metric_Pad0.77x0.64mm_HandSolder"
+		(property "Footprint" "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder"
 			(at 154.94 142.24 0)
 			(effects
 				(font
@@ -2107,7 +2091,7 @@
 				)
 			)
 		)
-		(property "Footprint" "LED_SMD:LED_0402_1005Metric_Pad0.77x0.64mm_HandSolder"
+		(property "Footprint" "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder"
 			(at 154.94 124.46 0)
 			(effects
 				(font
